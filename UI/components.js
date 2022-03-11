@@ -40,6 +40,8 @@ const TM_modal_css = `.modal-fader {
   border-radius: 5px;
   font-family: sans-serif;
   top: 50px;
+  color:black;
+  background:white;
 }
 .modal-window.active {
   display: block;
@@ -61,15 +63,6 @@ const TM_modal_css = `.modal-fader {
   border-radius: 3px;
   text-decoration: none;
 }`;
-/*
-
-<div id="modal-1" class="modal-window">
-    <h2>Modal window 1</h2>
-    <p>Proin rhoncus metus felis, ut tempor metus eleifend a. </p>
-    <p>Nam porta, quam ut elementum sollicitudin, augue nibh ornare turpis.</p>
-    <button class="modal-btn modal-hide">Close</button>
-</div>
-*/
 const TM_createModal = (uniqueId, htmlString) => {
   // append styling if it was not already appended, if it was, it does nothing
   TM_AppendCss(TM_modal_css, TM_modal_style_Id);
