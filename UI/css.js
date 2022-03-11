@@ -7,7 +7,7 @@ if (!TM_upsertElement)
     `required TM_upsertElement not found. Be sure to @require https://raw.githubusercontent.com/YuriScarbaci/MonkeyTools/main/UI/utils in your tampermonkey script before css!`
   );
 
-const safe_document = globalThis.document;
+if (!safe_document) var safe_document = globalThis.document;
 
 // Function to add style
 // based on https://www.geeksforgeeks.org/how-to-create-a-style-tag-using-javascript/

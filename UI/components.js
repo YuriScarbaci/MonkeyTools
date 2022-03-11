@@ -10,6 +10,7 @@ if (!TM_AppendCss)
   console.error(
     `required TM_AppendCss not found. Be sure to @require https://raw.githubusercontent.com/YuriScarbaci/MonkeyTools/main/UI/css in your tampermonkey script before css!`
   );
+if (!safe_document) var safe_document = globalThis.document;
 
 const TM_modal_style_Id = `TM-css-modal-${TM_unsafe_UID()}`;
 const TM_modal_fader_Id = `TM-css-modal-fader-${TM_unsafe_UID()}`;
@@ -69,7 +70,6 @@ const TM_modal_css = `.modal-fader {
     <button class="modal-btn modal-hide">Close</button>
 </div>
 */
-const safe_document = globalThis.document;
 const TM_createModal = (uniqueId, htmlString) => {
   // append styling if it was not already appended, if it was, it does nothing
   TM_AppendCss(TM_modal_css, TM_modal_style_Id);
