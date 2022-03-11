@@ -1,24 +1,15 @@
-const TM_unsafe_UID = globalThis?.TMTools?.utils?.TM_unsafe_UID
-  ? globalThis.TMTools.utils.TM_unsafe_UID
-  : () => {
-      console.error(
-        `required TM_unsafe_UID not found. Be sure to @require https://raw.githubusercontent.com/YuriScarbaci/MonkeyTools/main/UI/utils in your tampermonkey script before css!`
-      );
-    };
-const TM_AppendCss = globalThis?.TMTools?.css?.TM_AppendCss
-  ? globalThis.TMTools.css.TM_AppendCss
-  : () => {
-      console.error(
-        `required TM_AppendCss not found. Be sure to @require https://raw.githubusercontent.com/YuriScarbaci/MonkeyTools/main/UI/css in your tampermonkey script before css!`
-      );
-    };
-const TM_upsertElement = globalThis?.TMTools?.utils?.TM_upsertElement
-  ? globalThis.TMTools.utils.TM_upsertElement
-  : () => {
-      console.error(
-        `required TM_upsertElement not found. Be sure to @require https://raw.githubusercontent.com/YuriScarbaci/MonkeyTools/main/UI/utils in your tampermonkey script before css!`
-      );
-    };
+if (!TM_unsafe_UID)
+  console.error(
+    `required TM_unsafe_UID not found. Be sure to @require https://raw.githubusercontent.com/YuriScarbaci/MonkeyTools/main/UI/utils in your tampermonkey script before css!`
+  );
+if (!TM_upsertElement)
+  console.error(
+    `required TM_upsertElement not found. Be sure to @require https://raw.githubusercontent.com/YuriScarbaci/MonkeyTools/main/UI/utils in your tampermonkey script before css!`
+  );
+if (!TM_AppendCss)
+  console.error(
+    `required TM_AppendCss not found. Be sure to @require https://raw.githubusercontent.com/YuriScarbaci/MonkeyTools/main/UI/css in your tampermonkey script before css!`
+  );
 
 const TM_modal_style_Id = `TM-css-modal-${TM_unsafe_UID()}`;
 const TM_modal_fader_Id = `TM-css-modal-fader-${TM_unsafe_UID()}`;
@@ -91,7 +82,7 @@ const TM_createModal = (uniqueId, htmlString) => {
   );
 
   const newModal = safe_document.createElement("div");
-  newModal.className='modal-window';
+  newModal.className = "modal-window";
   // we add the close button to the modal always
   newModal.innerHTML = `${htmlString}\n<button class="modal-btn tm-modal-hide">Close</button>`;
   //

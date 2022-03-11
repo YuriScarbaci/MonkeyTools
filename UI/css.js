@@ -1,17 +1,11 @@
-const TM_unsafe_UID = globalThis?.TMTools?.utils?.TM_unsafe_UID
-  ? globalThis.TMTools.utils.TM_unsafe_UID
-  : () => {
-      console.error(
-        `required TM_unsafe_UID not found. Be sure to @require https://raw.githubusercontent.com/YuriScarbaci/MonkeyTools/main/UI/utils in your tampermonkey script before css!`
-      );
-    };
-const TM_upsertElement = globalThis?.TMTools?.utils?.TM_upsertElement
-  ? globalThis.TMTools.utils.TM_upsertElement
-  : () => {
-      console.error(
-        `required TM_upsertElement not found. Be sure to @require https://raw.githubusercontent.com/YuriScarbaci/MonkeyTools/main/UI/utils in your tampermonkey script before css!`
-      );
-    };
+if (!TM_unsafe_UID)
+  console.error(
+    `required TM_unsafe_UID not found. Be sure to @require https://raw.githubusercontent.com/YuriScarbaci/MonkeyTools/main/UI/utils in your tampermonkey script before css!`
+  );
+if (!TM_upsertElement)
+  console.error(
+    `required TM_upsertElement not found. Be sure to @require https://raw.githubusercontent.com/YuriScarbaci/MonkeyTools/main/UI/utils in your tampermonkey script before css!`
+  );
 
 const safe_document = globalThis.document;
 
@@ -31,10 +25,3 @@ const TM_AppendCss = (cssString, uniqueId = `TM-css-${TM_unsafe_UID()}`) => {
   /* Append style to the head element */
   safe_document.getElementsByTagName("head")[0].appendChild(css);
 };
-
-// tamper-monkey based way to expose functions across scripts via globalThis
-if (globalThis) {
-  if (!globalThis.TMTools) globalThis.TMTools = {};
-  if (!globalThis.TMTools.css) globalThis.TMTools.css = {};
-  globalThis.TMTools.css.TM_AppendCss = TM_AppendCss;
-}

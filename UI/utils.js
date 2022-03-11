@@ -23,11 +23,3 @@ function TM_upsertElement(
   }
   return { elem, didInsert };
 }
-
-// tamper-monkey based way to expose functions across scripts via globalThis
-if (globalThis) {
-  if (!globalThis.TMTools) globalThis.TMTools = {};
-  if (!globalThis.TMTools.utils) globalThis.TMTools.utils = {};
-  globalThis.TMTools.utils.TM_unsafe_UID = TM_unsafe_UID;
-  globalThis.TMTools.utils.TM_upsertElement = TM_upsertElement;
-}
