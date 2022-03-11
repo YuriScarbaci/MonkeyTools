@@ -101,7 +101,6 @@ const TM_createModal = (uniqueId, htmlString) => {
     modalFader.className += " active";
     newModal.className += " active";
   };
-  debugger;
   if (didInsert) {
     const closeButton = modalNode.querySelector(".tm-modal-hide");
     closeButton.addEventListener("click", closeModal);
