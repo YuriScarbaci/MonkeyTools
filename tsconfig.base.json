@@ -16,6 +16,9 @@
     "baseUrl": ".",
     "paths": {
       "@monkey-tools-monorepo/dialog": ["packages/dialog/src/index.ts"],
+      "@monkey-tools-monorepo/flyout-menu-button": [
+        "packages/flyout-menu-button/src/index.ts"
+      ],
       "@monkey-tools-monorepo/html-injectors-tools": [
         "packages/html-injectors-tools/src/index.ts"
       ]

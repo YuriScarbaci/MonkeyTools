@@ -1,14 +1,6 @@
-if (!TM_unsafe_UID)
+if (!TM_unsafe_UID || !TM_upsertElement || !TM_AppendCss)
   console.error(
-    `required TM_unsafe_UID not found. Be sure to @require https://raw.githubusercontent.com/YuriScarbaci/MonkeyTools/main/UI/utils in your tampermonkey script before css!`
-  );
-if (!TM_upsertElement)
-  console.error(
-    `required TM_upsertElement not found. Be sure to @require https://raw.githubusercontent.com/YuriScarbaci/MonkeyTools/main/UI/utils in your tampermonkey script before css!`
-  );
-if (!TM_AppendCss)
-  console.error(
-    `required TM_AppendCss not found. Be sure to @require https://raw.githubusercontent.com/YuriScarbaci/MonkeyTools/main/UI/css in your tampermonkey script before css!`
+    `required TM_unsafe_UID not found. Be sure to @require https://raw.githubusercontent.com/YuriScarbaci/MonkeyTools/main/tampermonkey/tools/html-injectors-tools/index.cjs in your tampermonkey script before css!`
   );
 const dialog_safe_document = globalThis.document;
 
@@ -16,7 +8,7 @@ const TM_modal_style_Id = `TM-css-modal-${TM_unsafe_UID()}`;
 const TM_modal_fader_Id = `TM-css-modal-fader-${TM_unsafe_UID()}`;
 
 // based on https://dev-bay.com/how-to-create-modal-window-in-pure-javascript/
-const TM_modal_css = `.modal-fader {
+const TM_modal_css = `.${TM_modal_style_Id}-modal-fader {
   display: none;
   position: fixed;
   top: 0;
@@ -27,10 +19,10 @@ const TM_modal_css = `.modal-fader {
   z-index: 99998;
   background: rgba(0,0,0,0.8);
 }
-.modal-fader.active {
+.${TM_modal_style_Id}-modal-fader.active {
   display: block;
 }
-.modal-window {
+.${TM_modal_style_Id}-modal-window {
   display: none;
   position: absolute;
   left: 50%;
@@ -44,18 +36,18 @@ const TM_modal_css = `.modal-fader {
   color:black;
   background:white;
 }
-.modal-window.active {
+.${TM_modal_style_Id}-modal-window.active {
   display: block;
 }
-.modal-window h1,
-.modal-window h2,
-.modal-window h3,
-.modal-window h4,
-.modal-window h5,
-.modal-window h6 {
+.${TM_modal_style_Id}-modal-window h1,
+.${TM_modal_style_Id}-modal-window h2,
+.${TM_modal_style_Id}-modal-window h3,
+.${TM_modal_style_Id}-modal-window h4,
+.${TM_modal_style_Id}-modal-window h5,
+.${TM_modal_style_Id}-modal-window h6 {
   margin: 0;
 }
-.modal-btn {
+.${TM_modal_style_Id}-modal-btn {
   background: #36a5a5;
   border: none;
   color: #fff;
@@ -69,20 +61,23 @@ const TM_createModal = (uniqueId: string, htmlString: string) => {
   TM_AppendCss(TM_modal_css, TM_modal_style_Id);
   // append modal-fader element for the overlay
   const newModalFader = dialog_safe_document.createElement('div');
-  newModalFader.className = 'modal-fader';
+  newModalFader.className = `${TM_modal_style_Id}-modal-fader`;
   const { elem: modalFader } = TM_upsertElement(
     TM_modal_fader_Id,
     newModalFader
   );
+  const modalClass = `${TM_modal_style_Id}-modal-window`;
 
   const newModal = dialog_safe_document.createElement('div');
-  newModal.className = 'modal-window';
+  newModal.className = modalClass;
   // we add the close button to the modal always
   newModal.innerHTML = `${htmlString}\n<button class="modal-btn tm-modal-hide">Close</button>`;
   //
   const { elem: modalNode, didInsert } = TM_upsertElement(uniqueId, newModal);
   const closeModal = () => {
-    const modalWindows = dialog_safe_document.querySelectorAll('.modal-window');
+    const modalWindows = dialog_safe_document.querySelectorAll(
+      `.${modalClass}`
+    );
     if (modalFader.className.indexOf('active') !== -1)
       modalFader.className = modalFader.className.replace('active', '');
 
