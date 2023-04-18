@@ -1,0 +1,32 @@
+{
+  "name": "dialog",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/dialog/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "skipTypeCheck": true,
+        "outputPath": "tampermonkey/tools/dialog",
+        "main": "packages/dialog/src/index.ts",
+        "tsConfig": "packages/dialog/tsconfig.lib.json",
+        "assets": [],
+        "generatePackageJson": false,
+        "format": ["cjs"],
+        "esbuildOptions": {
+          "treeShaking": false
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["packages/dialog/**/*.ts"]
+      }
+    }
+  },
+  "tags": []
+}

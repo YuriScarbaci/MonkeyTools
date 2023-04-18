@@ -1,0 +1,32 @@
+{
+  "name": "html-injectors-tools",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/html-injectors-tools/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "skipTypeCheck": true,
+        "outputPath": "tampermonkey/tools/html-injectors-tools",
+        "main": "packages/html-injectors-tools/src/index.ts",
+        "tsConfig": "packages/html-injectors-tools/tsconfig.lib.json",
+        "assets": [],
+        "generatePackageJson": false,
+        "format": ["cjs"],
+        "esbuildOptions":{
+          "treeShaking": false
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["packages/html-injectors-tools/**/*.ts"]
+      }
+    }
+  },
+  "tags": []
+}
