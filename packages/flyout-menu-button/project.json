@@ -1,0 +1,32 @@
+{
+  "name": "flyout-menu-button",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/flyout-menu-button/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "skipTypeCheck": true,
+        "outputPath": "tampermonkey/tools/flyout-menu-button",
+        "main": "packages/flyout-menu-button/src/index.ts",
+        "tsConfig": "packages/flyout-menu-button/tsconfig.lib.json",
+        "assets": [],
+        "generatePackageJson": false,
+        "format": ["cjs"],
+        "esbuildOptions": {
+          "treeShaking": false
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["packages/flyout-menu-button/**/*.ts"]
+      }
+    }
+  },
+  "tags": []
+}
