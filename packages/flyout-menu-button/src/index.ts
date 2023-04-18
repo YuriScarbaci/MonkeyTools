@@ -23,10 +23,10 @@ const TM_flyout_menu_style_Id = ({
 const TM_Flyout_Menu_css = (opts: TM_Flyout_Menu_Options) => `
 .${TM_flyout_menu_style_Id(opts)}-main-button {
     position: fixed;
-    ${opts.top !== undefined ? `top: ${opts.top};` : ``};
-    ${opts.right !== undefined ? `right: ${opts.right};` : ``};
-    ${opts.left !== undefined ? `left: ${opts.left};` : ``};
-    ${opts.bottom !== undefined ? `bottom: ${opts.bottom};` : ``};
+    ${opts.top !== undefined ? `top: ${opts.top};` : ``}
+    ${opts.right !== undefined ? `right: ${opts.right};` : ``}
+    ${opts.left !== undefined ? `left: ${opts.left};` : ``}
+    ${opts.bottom !== undefined ? `bottom: ${opts.bottom};` : ``}
     border: none;
     border-radius: 50%;
     background-color: blue;
@@ -37,8 +37,10 @@ const TM_Flyout_Menu_css = (opts: TM_Flyout_Menu_Options) => `
 }
 .${TM_flyout_menu_style_Id(opts)}-flyout-menu {
     position: fixed;
-    top: 90px;
-    right: 30px;
+    ${opts.top !== undefined ? `top: ${opts.top};` : ``}
+    ${opts.right !== undefined ? `right: ${opts.right};` : ``}
+    ${opts.left !== undefined ? `left: ${opts.left};` : ``}
+    ${opts.bottom !== undefined ? `bottom: ${opts.bottom};` : ``}
     background-color: white;
     border: 1px solid #ccc;
     border-radius: 5px;
@@ -76,9 +78,8 @@ type MenuItem = {
  * @param options.bottom - the bottom position of the menu
  * @example
  * const menu = new TM_Flyout_Menu('my-menu', { top: '10px', right: '10px' });
- * menu.addMenuItem({ label: 'My Label', onClick: () => console.log('clicked') });
+ * menu.addMenuItem({ label: 'My Label', onClick: () => console.log('clicked'), id:'my-id' });
  * menu.create();
- * menu.remove();
  *
  */
 class TM_Flyout_Menu {
@@ -87,27 +88,27 @@ class TM_Flyout_Menu {
   private mainButtonClass: string;
   private flyoutMenuClass: string;
   private menuItemClass: string;
-  private mainButton: HTMLButtonElement;
-  private flyoutMenu: HTMLDivElement;
   private menuItems: MenuItem[];
   didInsert: boolean;
   buttonNode: HTMLButtonElement | null;
   flyoutMenuNode: HTMLDivElement | null;
 
   constructor(uniqueId: string, options: TM_Flyout_Menu_Options) {
-    this.uniqueId = uniqueId;
+    this.uniqueId = TM_flyout_menu_style_Id(options) + '-' + uniqueId;
     this.options = options;
     this.mainButtonClass = `${TM_flyout_menu_style_Id(options)}-main-button`;
     this.flyoutMenuClass = `${TM_flyout_menu_style_Id(options)}-flyout-menu`;
     this.menuItemClass = `${TM_flyout_menu_style_Id(options)}-menu-item`;
-    this.mainButton = flyout_safe_document.createElement('button');
-    this.flyoutMenu = flyout_safe_document.createElement('div');
     this.menuItems = [];
     this.didInsert = false;
     this.buttonNode = null;
     this.flyoutMenuNode = null;
   }
 
+  // for each menuItems in the instance
+  //  create a new button
+  //  assign the class to the button
+  //  append the button to the flyout menu (// it's the flyout menu node that will be appended to the document)
   private createMenuItems() {
     this.menuItems.forEach((item) => {
       const button = flyout_safe_document.createElement('button');
@@ -118,44 +119,51 @@ class TM_Flyout_Menu {
       button.addEventListener('click', () => {
         item.onClick();
       });
-      this.flyoutMenu.appendChild(button);
+      if (this.flyoutMenuNode) this.flyoutMenuNode.appendChild(button);
     });
   }
 
+  // create a new button
+  //  assign the class to the button
+  //  upsert the document with the button including the event listener
   private createMainButton() {
-    this.mainButton.className = this.mainButtonClass;
-    this.mainButton.textContent = 'Menu';
-    this.mainButton.addEventListener('click', () => {
-      this.flyoutMenu.style.display =
-        this.flyoutMenu.style.display === 'none' ? 'block' : 'none';
+    const newMainButton = flyout_safe_document.createElement('button');
+    newMainButton.className = this.mainButtonClass;
+    newMainButton.textContent = 'Menu';
+    newMainButton.addEventListener('click', () => {
+      if (this.flyoutMenuNode)
+        this.flyoutMenuNode.style.display =
+          this.flyoutMenuNode.style.display === 'none' ? 'block' : 'none';
     });
+    const { elem: mainButtonNode, didInsert } = TM_upsertElement(
+      this.uniqueId + 'button',
+      newMainButton
+    );
+    this.buttonNode = mainButtonNode;
+    this.didInsert = didInsert;
   }
 
+  // create a new div
+  //  assign the class to the div
+  //  upsert the document with the div
   private createFlyoutMenu() {
-    this.flyoutMenu.className = this.flyoutMenuClass;
-    this.flyoutMenu.classList.add('flyout-menu');
+    const newFlyoutMenu = flyout_safe_document.createElement('div');
+    newFlyoutMenu.className = this.flyoutMenuClass;
+    const { elem: flyoutMenuNode } = TM_upsertElement(
+      this.uniqueId + 'flyout-menu',
+      newFlyoutMenu
+    );
+    this.flyoutMenuNode = flyoutMenuNode;
   }
 
   public create() {
-    this.createMainButton();
-    this.createFlyoutMenu();
-    this.createMenuItems();
     TM_AppendCss(
       TM_Flyout_Menu_css(this.options),
       TM_flyout_menu_style_Id(this.options)
     );
-    const { elem: mainButtonNode, didInsert } = TM_upsertElement(
-      this.uniqueId,
-      this.mainButton
-    );
-    this.didInsert = didInsert;
-    this.buttonNode = mainButtonNode;
-
-    const { elem: flyoutMenuNode } = TM_upsertElement(
-      this.uniqueId,
-      this.flyoutMenu
-    );
-    this.flyoutMenuNode = flyoutMenuNode;
+    this.createFlyoutMenu();
+    this.createMenuItems();
+    this.createMainButton();
   }
 
   /* **** methods to add/remove/modify menu items **** */
@@ -166,14 +174,9 @@ class TM_Flyout_Menu {
   //  4 - upsert the new flyout menu
   public addMenuItem(item: MenuItem) {
     this.menuItems.push(item);
-    this.flyoutMenu.remove();
+    if (this.flyoutMenuNode) this.flyoutMenuNode.remove();
     this.createFlyoutMenu();
     this.createMenuItems();
-    const { elem: flyoutMenuNode } = TM_upsertElement(
-      this.uniqueId,
-      this.flyoutMenu
-    );
-    this.flyoutMenuNode = flyoutMenuNode;
   }
   // to remove a menu item we will:
   //  1 - find the index of the item in the menuItems array
@@ -186,14 +189,9 @@ class TM_Flyout_Menu {
     if (index > -1) {
       this.menuItems.splice(index, 1);
     }
-    this.flyoutMenu.remove();
+    if (this.flyoutMenuNode) this.flyoutMenuNode.remove();
     this.createFlyoutMenu();
     this.createMenuItems();
-    const { elem: flyoutMenuNode } = TM_upsertElement(
-      this.uniqueId,
-      this.flyoutMenu
-    );
-    this.flyoutMenuNode = flyoutMenuNode;
   }
 
   // to modify a menu item we will:
@@ -209,13 +207,8 @@ class TM_Flyout_Menu {
       this.menuItems.splice(index, 1);
     }
     this.menuItems.push(newItem);
-    this.flyoutMenu.remove();
+    if (this.flyoutMenuNode) this.flyoutMenuNode.remove();
     this.createFlyoutMenu();
     this.createMenuItems();
-    const { elem: flyoutMenuNode } = TM_upsertElement(
-      this.uniqueId,
-      this.flyoutMenu
-    );
-    this.flyoutMenuNode = flyoutMenuNode;
   }
 }
