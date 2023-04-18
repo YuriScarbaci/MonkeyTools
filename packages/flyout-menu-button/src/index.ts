@@ -65,6 +65,15 @@ type MenuItem = {
   onClick: () => void;
   id: string;
 };
+type EventType =
+  | 'created-btn'
+  | 'created-flyout'
+  | 'added-menu-item'
+  | 'removed-menu-item';
+
+type TM_Flyout_Event_Params = {
+  eventType: EventType;
+};
 // we convert the above function to a class due to the nature of the functionality
 //   class will be extremely useful for handling instanciated information like the uid
 //   we also want to provide methods to remove/add/modify the menu items
@@ -92,6 +101,18 @@ class TM_Flyout_Menu {
   didInsert: boolean;
   buttonNode: HTMLButtonElement | null;
   flyoutMenuNode: HTMLDivElement | null;
+  // since we want to handle singleton
+  // we need a mechanism to notify multiple scripts when things happens
+  // for this we create a "stack" of scripts that are listening for events
+  // each script will use the "subscribe" method to add itself to the stack
+  // the stack will pipe the events to each script in order of subscription
+  // to ensure the order of execution we use a javascript map
+  private eventStack: Map<string, (params: TM_Flyout_Event_Params) => void> =
+    new Map();
+
+  private notify(params: TM_Flyout_Event_Params) {
+    this.eventStack.forEach((callback) => callback(params));
+  }
 
   constructor(uniqueId: string, options: TM_Flyout_Menu_Options) {
     this.uniqueId = TM_flyout_menu_style_Id(options) + '-' + uniqueId;
@@ -103,6 +124,27 @@ class TM_Flyout_Menu {
     this.didInsert = false;
     this.buttonNode = null;
     this.flyoutMenuNode = null;
+  }
+  // create a new button
+  //  assign the class to the button
+  //  upsert the document with the button including the event listener
+  private createMainButton() {
+    const newMainButton = flyout_safe_document.createElement('button');
+    newMainButton.className = this.mainButtonClass;
+    newMainButton.textContent = 'Menu';
+    newMainButton.addEventListener('click', () => {
+      if (this.flyoutMenuNode)
+        this.flyoutMenuNode.style.display =
+          this.flyoutMenuNode.style.display === 'none' ? 'block' : 'none';
+    });
+    const { elem: mainButtonNode, didInsert } = TM_upsertElement(
+      this.uniqueId + 'button',
+      newMainButton
+    );
+    this.buttonNode = mainButtonNode;
+    this.didInsert = didInsert;
+    // notify the event stack that a new button was created
+    this.notify({ eventType: 'created-btn' });
   }
 
   // for each menuItems in the instance
@@ -122,27 +164,6 @@ class TM_Flyout_Menu {
       if (this.flyoutMenuNode) this.flyoutMenuNode.appendChild(button);
     });
   }
-
-  // create a new button
-  //  assign the class to the button
-  //  upsert the document with the button including the event listener
-  private createMainButton() {
-    const newMainButton = flyout_safe_document.createElement('button');
-    newMainButton.className = this.mainButtonClass;
-    newMainButton.textContent = 'Menu';
-    newMainButton.addEventListener('click', () => {
-      if (this.flyoutMenuNode)
-        this.flyoutMenuNode.style.display =
-          this.flyoutMenuNode.style.display === 'none' ? 'block' : 'none';
-    });
-    const { elem: mainButtonNode, didInsert } = TM_upsertElement(
-      this.uniqueId + 'button',
-      newMainButton
-    );
-    this.buttonNode = mainButtonNode;
-    this.didInsert = didInsert;
-  }
-
   // create a new div
   //  assign the class to the div
   //  upsert the document with the div
@@ -154,6 +175,9 @@ class TM_Flyout_Menu {
       newFlyoutMenu
     );
     this.flyoutMenuNode = flyoutMenuNode;
+    this.createMenuItems();
+    // notify the event stack that a new menu was created
+    this.notify({ eventType: 'created-flyout' });
   }
 
   public create() {
@@ -162,7 +186,6 @@ class TM_Flyout_Menu {
       TM_flyout_menu_style_Id(this.options)
     );
     this.createFlyoutMenu();
-    this.createMenuItems();
     this.createMainButton();
   }
 
@@ -176,7 +199,8 @@ class TM_Flyout_Menu {
     this.menuItems.push(item);
     if (this.flyoutMenuNode) this.flyoutMenuNode.remove();
     this.createFlyoutMenu();
-    this.createMenuItems();
+    // notify the event stack that a new menu item was added
+    this.notify({ eventType: 'added-menu-item' });
   }
   // to remove a menu item we will:
   //  1 - find the index of the item in the menuItems array
@@ -191,7 +215,8 @@ class TM_Flyout_Menu {
     }
     if (this.flyoutMenuNode) this.flyoutMenuNode.remove();
     this.createFlyoutMenu();
-    this.createMenuItems();
+    // notify the event stack that a menu item was removed
+    this.notify({ eventType: 'removed-menu-item' });
   }
 
   // to modify a menu item we will:
@@ -209,6 +234,22 @@ class TM_Flyout_Menu {
     this.menuItems.push(newItem);
     if (this.flyoutMenuNode) this.flyoutMenuNode.remove();
     this.createFlyoutMenu();
-    this.createMenuItems();
+  }
+
+  public subscribe(
+    uniqueId: string,
+    callback: (params: TM_Flyout_Event_Params) => void
+  ) {
+    this.eventStack.set(uniqueId, callback);
+  }
+  public unsubscribe(uniqueId: string) {
+    this.eventStack.delete(uniqueId);
   }
 }
+
+// we also create a singleton version of the class to allow different scripts to use the same menu
+
+const TM_Flyout_Menu_Singleton = new TM_Flyout_Menu('tm-shared-flyout-menu', {
+  top: '30px',
+  right: '30px',
+});

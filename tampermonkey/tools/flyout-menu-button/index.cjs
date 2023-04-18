@@ -61,6 +61,16 @@ var TM_Flyout_Menu = class {
   didInsert;
   buttonNode;
   flyoutMenuNode;
+  // since we want to handle singleton
+  // we need a mechanism to notify multiple scripts when things happens
+  // for this we create a "stack" of scripts that are listening for events
+  // each script will use the "subscribe" method to add itself to the stack
+  // the stack will pipe the events to each script in order of subscription
+  // to ensure the order of execution we use a javascript map
+  eventStack = /* @__PURE__ */ new Map();
+  notify(params) {
+    this.eventStack.forEach((callback) => callback(params));
+  }
   constructor(uniqueId, options) {
     this.uniqueId = TM_flyout_menu_style_Id(options) + "-" + uniqueId;
     this.options = options;
@@ -106,6 +116,7 @@ var TM_Flyout_Menu = class {
     );
     this.buttonNode = mainButtonNode;
     this.didInsert = didInsert;
+    this.notify({ eventType: "created-btn" });
   }
   // create a new div
   //  assign the class to the div
@@ -118,6 +129,7 @@ var TM_Flyout_Menu = class {
       newFlyoutMenu
     );
     this.flyoutMenuNode = flyoutMenuNode;
+    this.notify({ eventType: "created-flyout" });
   }
   create() {
     TM_AppendCss(
@@ -140,6 +152,7 @@ var TM_Flyout_Menu = class {
       this.flyoutMenuNode.remove();
     this.createFlyoutMenu();
     this.createMenuItems();
+    this.notify({ eventType: "added-menu-item" });
   }
   // to remove a menu item we will:
   //  1 - find the index of the item in the menuItems array
@@ -156,6 +169,7 @@ var TM_Flyout_Menu = class {
       this.flyoutMenuNode.remove();
     this.createFlyoutMenu();
     this.createMenuItems();
+    this.notify({ eventType: "removed-menu-item" });
   }
   // to modify a menu item we will:
   //  1 - find the index of the item in the menuItems array
@@ -175,4 +189,14 @@ var TM_Flyout_Menu = class {
     this.createFlyoutMenu();
     this.createMenuItems();
   }
+  subscribe(uniqueId, callback) {
+    this.eventStack.set(uniqueId, callback);
+  }
+  unsubscribe(uniqueId) {
+    this.eventStack.delete(uniqueId);
+  }
 };
+var TM_Flyout_Menu_Singleton = new TM_Flyout_Menu("tm-shared-flyout-menu", {
+  top: "30px",
+  right: "30px"
+});
